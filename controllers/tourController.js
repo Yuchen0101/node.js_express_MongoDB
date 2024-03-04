@@ -14,17 +14,17 @@ exports.checkID = (req, res, next, val) => { // the 4th val is the value of the 
       message: 'Invalid ID'
     });
   }
-  next();
+  next(); // next() here
 };
 
 exports.checkBody = (req, res, next) => {
   if (!req.body.name || !req.body.price) {
-    return res.status(400).json({
+    return res.status(400).json({  // // return!! make sure the chain breaks here!!
       status: 'fail',
       message: 'Missing name or price'
     });
   }
-  next();
+  next(); // next() here
 };
 
 exports.getAllTours = (req, res) => {
