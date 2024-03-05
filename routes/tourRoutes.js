@@ -8,7 +8,7 @@ const router = express.Router(); // create the route
 router
   .route('/') // relative to the root route in app.js
   .get(tourController.getAllTours)
-  .post(tourController.checkBody, tourController.createTour); // chain middleware handler
+  .post(tourController.createTour); // chain middleware handler
 
 router
   .route('/:id') // relative to the root route in app.js
