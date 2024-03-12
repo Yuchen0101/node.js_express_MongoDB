@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const slugify = require('slugify');
 
 const tourSchema = new mongoose.Schema(
   {
@@ -81,9 +82,50 @@ const tourSchema = new mongoose.Schema(
     toObject: { virtuals: true }
   }
 );
-// virtual property: derived on the fly
+
+// virtual property: derived on the fly when documents being queried + not persisted
 tourSchema.virtual('durationWeeks').get(function() {
   return this.duration / 7;
+});
+
+// DOCUMENT MIDDLEWARE: only runs before .save() and .create(), not including insertMany()
+tourSchema.pre('save', function(next) {
+  // before saving the document, we can still manipulate the current document
+  this.slug = slugify(this.name, { lower: true });
+  next();
+});
+
+// tourSchema.pre('save', function(next) {
+//   console.log('Will save document...');
+//   next();
+// });
+
+// tourSchema.post('save', function(doc, next) {
+//   console.log(doc);
+//   next();
+// });
+
+// QUERY MIDDLEWARE
+// applies to all API starts with 'find', before all execution of query
+tourSchema.pre(/^find/, function(next) {
+  // 'this' points to the query object
+  this.find({ secretTour: { $ne: true } }); // modify the query object to exclude secretTour
+  // this.select('name duration'); will not work! because it needs to be called after the actual execution of query
+  this.start = Date.now();
+  next();
+});
+// after all execution of query
+tourSchema.post(/^find/, function(docs, next) {
+  //  'docs' is the documents we get from query, 'this' still points to the query object
+  console.log(`Query took ${Date.now() - this.start} milliseconds!`);
+  next();
+});
+
+// AGGREGATION MIDDLEWARE
+tourSchema.pre('aggregate', function(next) {
+  // 'this.pipeline()' returns the pipeline array, we can use unshift/shift to add stages
+  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } }); // 'this' points to the current aggregation object
+  next();
 });
 
 const Tour = mongoose.model('Tour', tourSchema);
