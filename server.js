@@ -11,7 +11,7 @@ const DB = process.env.DATABASE.replace(
   process.env.DATABASE_PASSWORD
 );
 
-mongoose.connect(DB).then();
+mongoose.connect(DB);
 
 // after dotenv, we can access process.env.xxx
 const port = process.env.PORT || 3000;
